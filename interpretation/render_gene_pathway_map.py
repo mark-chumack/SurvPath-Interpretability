@@ -6,7 +6,7 @@ gene bars) use ``render_cross_modal.py`` instead — this one is for scanning ma
 pathways at once.
 
 Standalone renderer that works purely from the files interpret_survpath.py
-already wrote — no model, no dataset, no GPU. It needs:
+already wrote. It needs:
 
     <case>_cross_attn_pathways.npy   [P, N]  pathway -> patch attention  (REQUIRED)
     <case>_pathway_importance.csv            to rank the top-K pathways   (optional*)
@@ -22,30 +22,10 @@ already wrote — no model, no dataset, no GPU. It needs:
  ** Only to turn --case-id into the file name; --coords-h5/--slide-path or
     --slide-id make it unnecessary.
 
-IMPORTANT — what this can and cannot show
------------------------------------------
-SurvPath produces a spatial (per-patch) attention map for each *pathway*, but
-only a single scalar importance per *gene* (no spatial dimension). There is no
-gene-level "where on the slide". So every gene inside a pathway necessarily
-shares that pathway's patch footprint. This script therefore draws one heatmap
-per top pathway and annotates it with that pathway's top genes — the honest
-reading of "where the top genes influenced the WSI".
-
-And a second caveat the figure now states for itself: rows of A_{P->H} are
-highly correlated, so these panels tend to look alike. The caption reports the
-measured cross-pathway rank correlation, plus a Moran's I test per panel of
-whether the map is spatially structured at all — because rank normalisation
-renders noise just as vividly as signal.
-
 Output: a single multi-panel PNG (one panel per top pathway, plus an optional
-gene-importance-weighted combined panel). Use --separate to also emit one PNG
+gene-importance-weighted combined panel). --separate to also emit one PNG
 per pathway.
 
-Pointing it at the .h5 and .svs
--------------------------------
-Simplest: name the two files outright. Nothing is derived, so no directories and
-no metadata CSV are needed, and the exact on-disk name — UUID and all — is used
-verbatim:
 
     python -m interpretation.render_gene_pathway_map \
         --interp-dir  results_brca/interpret \
@@ -53,33 +33,6 @@ verbatim:
         --coords-h5   /data/patches_h5/TCGA-AC-A23E-01Z-00-DX1.A23982C3-E0EB-4DB2-84EE-26E0005E3F66.h5 \
         --slide-path  /data/slides/TCGA-AC-A23E-01Z-00-DX1.A23982C3-E0EB-4DB2-84EE-26E0005E3F66.svs
 
-(--case-id is still required: it is the prefix of the .npy/.csv this reads out of
---interp-dir, not a file name for the slide.)
-
-Otherwise it looks the files up by name, exactly as interpret_survpath.py does:
-"<slide_id>.h5" under --coords-dir and "<slide_id>.svs" under --slide-dir. The
-stem is the case's slide_id from the study metadata CSV, via the same
-case_id -> slide_id chain the dataset uses — a case id (TCGA-AC-A23E) is NOT a
-file name, the files are named by slide id
-(TCGA-AC-A23E-01Z-00-DX1.<uuid>), which is why looking up the case id found
-nothing. --slide-id supplies that stem directly and skips the CSV; give it in
-full, UUID included.
-
-    INTERP_COORDS_DIR  dir of CLAM patch files "<slide_id>.h5"
-    INTERP_SLIDE_DIR   dir of the whole-slide images "<slide_id>.svs"
-    INTERP_LABEL_FILE  study metadata CSV mapping case_id -> slide_id
-    INTERP_PATCH_SIZE  patch edge in level-0 pixels        (default: inferred)
-    INTERP_OUTDIR      where interpret_survpath.py wrote its .npy / .csv
-
-The matching CLI flags (--coords-dir / --slide-dir / --label-file /
---patch-size / --interp-dir) override the environment when given.
-
-    export INTERP_COORDS_DIR=/path/to/CLAM/patches_h5
-    export INTERP_SLIDE_DIR=/path/to/slides
-    python -m interpretation.render_gene_pathway_map \
-        --interp-dir  results_brca/interpret \
-        --case-id     TCGA-AC-A23E \
-        --label-file  datasets_csv/metadata/tcga_brca.csv
 """
 import argparse
 import math

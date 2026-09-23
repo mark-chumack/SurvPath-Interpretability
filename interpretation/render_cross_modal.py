@@ -10,37 +10,13 @@ four stacked pieces for one pathway:
     ANPEP  ####|                        <- top genes by signed Captum |IG|
     IL6        |###                        red = raises risk, blue = lowers it
       -0.004    0    0.006
-
-Run it on what ``interpret_survpath.py`` already wrote — no model, no GPU:
-
+To run:
     python -m interpretation.render_cross_modal \
         --interp-dir results_brca/interpret \
         --case-id    TCGA-BH-A0DI \
         --coords-h5  /data/patches_h5/TCGA-BH-A0DI-01Z-00-DX1.<uuid>.h5 \
         --slide-path /data/slides/TCGA-BH-A0DI-01Z-00-DX1.<uuid>.svs
 
-(or set INTERP_COORDS_DIR / INTERP_SLIDE_DIR / INTERP_LABEL_FILE and let it look
-the files up by name — see ``interpretation.case_inputs``.)
-
-Two deliberate departures from this repo's usual chart rules
-------------------------------------------------------------
-JET.  ``heatmap_utils`` rejects rainbow ramps, and for good reason: jet's
-lightness is not monotone, so a reader cannot rank two mid-range tiles by eye.
-This module defaults to it anyway because the point of the figure is to match
-the published one. The cost is paid down in the caption, which states the ramp
-order explicitly and tells the reader to use the colorbar for magnitude rather
-than the hue. ``--cmap attention`` switches to the sequential blue ramp and
-gives up the resemblance.
-
-RAW ROWS.  Rows of A_{P->H} typically rank-correlate above 0.9, because the
-dominant term in q_p . k_n is how attendable patch n is at all rather than which
-pathway is asking. So these panels come out looking alike. That is a true
-property of the attention, not a plotting artifact, and the fix is not to
-subtract it away behind the reader's back — it is to measure it. Every figure
-carries the measured cross-pathway correlation and a Moran's I test of whether
-each map is spatially structured at all, so "these five look identical" and
-"the median is -0.07" are answered on the figure instead of being left for the
-reader to suspect.
 """
 from __future__ import annotations
 

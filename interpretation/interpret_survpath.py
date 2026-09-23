@@ -17,10 +17,6 @@ Interpretability for SurvPath — three complementary views:
       output itself, so red means "raised this case's risk" and blue means
       "lowered it". Written as <case>_ig_heatmap.png.
 
-Run it exactly like ``main.py`` (same CLI args, i.e. the same flags your
-``scripts/survpath.sh`` already passes), and supply a few interpretation-only
-settings via environment variables so we do not have to touch ``process_args``:
-
     INTERP_CKPT        path to a trained checkpoint, e.g.
                        results/<exp>/s_0_checkpoint.pt          (REQUIRED)
     INTERP_FOLD        which fold's val split to read a case from   (default 0)
@@ -47,7 +43,7 @@ settings via environment variables so we do not have to touch ``process_args``:
     INTERP_IG_CMAP     colormap for the IG map alone
                        (default: attention-signed when signed)
 
-  Spatial overlay (OPTIONAL — needs data this repo does not store):
+  Spatial overlay :
     INTERP_COORDS_DIR  dir of CLAM patch files "<slide_id>.h5" holding a
                        'coords' dataset (level-0 pixel x,y per patch)
     INTERP_SLIDE_DIR   dir of the whole-slide images ("<slide_id>.svs" etc.)
@@ -57,8 +53,7 @@ If COORDS_DIR / SLIDE_DIR are not given, the script still writes the per-patch
 attention vectors (.npy) and the Captum rankings (.csv); it just skips painting
 them onto the slide and prints how to regenerate the coordinates.
 
-Example (bash):
-
+To Run:
     INTERP_CKPT=results/tcga_brca__survpath/s_0_checkpoint.pt \
     INTERP_OUTDIR=results/interpret \
     INTERP_TOPK=10 \
